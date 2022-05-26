@@ -16,7 +16,7 @@ Camera::Camera()
 bool Camera::open(string filename)
 {
 	m_fileName = filename;
-	
+
 	// Convert filename to number if you want to
 	// open webcam stream
 	istringstream iss(filename.c_str());
@@ -26,17 +26,17 @@ bool Camera::open(string filename)
 	{
 		isOpen = m_cap.open(filename.c_str());
 	}
-	else 
+	else
 	{
 		isOpen = m_cap.open(devid);
 	}
-	
+
 	if(!isOpen)
 	{
 		cerr << "Unable to open video file." << endl;
 		return false;
 	}
-	
+
 	// set framerate, if unable to read framerate, set it to 30
 	m_fps = m_cap.get(CAP_PROP_FPS);
 	if(m_fps == 0)
@@ -67,7 +67,7 @@ void Camera::play()
 	int count_gauche = 0;
 	Scalar color = Scalar(0, 0, 255 );
 
-		
+
 	while(isReading)
 	{
 		// Get frame from stream
@@ -106,7 +106,7 @@ void Camera::play()
 			{
 				first_image++;
 				cout << first_image << endl;
-				
+
 				// Conversion de couleurs de RGB à HSV
 				cvtColor(m_frame, m_hsv, COLOR_BGR2HSV);
 				//imshow("HSV", m_hsv);
@@ -127,20 +127,20 @@ void Camera::play()
 				//On réalise une ouverture
 				morphologyEx(m_closed, m_opened, MORPH_CLOSE, getStructuringElement(MORPH_ELLIPSE, Size(12, 12)));
 				//imshow("Ouverture", m_opened);
-				
+
 				// On trace les bords
 				Canny(m_opened, m_edge, 0, 0, 3);
 				//imshow("Bordure", m_edge);
 
-				// Ne conserve que les lignes droites 
+				// Ne conserve que les lignes droites
 				HoughLinesP(m_edge, m_road, 1, 3.14/180, 60, 100, 100);
 				//imshow("Bordure", m_edge);
 
-				
+
 				//imshow("Image finale", m_frame_final);
 			}
 
-			//Trace les lignes 
+			//Trace les lignes
 			for (size_t i = 0; i < m_road.size(); i++) {
 				Vec4i l = m_road[i];
 				line(m_frame_final, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0, 0, 255), 3, LINE_AA);
@@ -151,8 +151,8 @@ void Camera::play()
 			/*-----------------------------------------------------*/
 			/*-----------------SUIVI DES VEHICULES-----------------*/
 			/*-----------------------------------------------------*/
-			
-			
+
+
 			Mat m_Sframe_compt = m_frame.clone();
 
 			if(first_image2 == 1){
@@ -161,11 +161,11 @@ void Camera::play()
 				//imshow("V - Image binarisée", m_Sbinarize_initial);
 			}
 			first_image2++;
-			
-			
+
+
 			if(first_image2 > 1){
-				
-				// On binarise l'image 
+
+				// On binarise l'image
 				cvtColor(m_frame, m_Sgray, COLOR_BGR2GRAY);
 				//imshow("V - Video binarisée", m_Sbinarize);
 
@@ -188,15 +188,15 @@ void Camera::play()
 				//On dilate
 				morphologyEx(m_Sopen, m_Sdilate, MORPH_DILATE, getStructuringElement(MORPH_ELLIPSE, Size(5,5)));
 				//imshow("V - Video dilate", m_Sdilate);
-				
+
 				//On ferme
 				morphologyEx(m_Sdilate, m_Sclose, MORPH_CLOSE, getStructuringElement(MORPH_ELLIPSE, Size(3, 3)));
 				//imshow("V - Video fermeture", m_Sclose);
-				
+
 				//On erode --> Pas utile
 				//morphologyEx(m_Sclose, m_Serode, MORPH_ERODE, getStructuringElement(MORPH_ELLIPSE, Size(3, 3)));
 				//imshow("V - Video erosion", m_Serode);
-				
+
 
 				//On détecte les bords
 				Canny( m_Sclose, m_Scanny, 100 , 200);
@@ -205,7 +205,7 @@ void Camera::play()
 				//On en déduit les contours
 				findContours(m_Scanny, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE );
 
-				
+
 				Mat drawing = Mat::zeros( m_Scanny.size(), CV_8UC3 );
 
 				//On trace un carré rouge autour des vehicules
@@ -225,8 +225,8 @@ void Camera::play()
 					if(arcLength(contours[i], true) > 120){
 
 						// On centre le carré rouge
-						Point center; 
-						center.x = x;	
+						Point center;
+						center.x = x;
 						center.y = y;
 						float range = 2;
 
@@ -262,7 +262,7 @@ void Camera::play()
 							cout << "gauche = "<< count_gauche << " droite ="<< count_droite << endl;
 						}
 */
-			
+
 
 		}
 		else
@@ -284,34 +284,8 @@ bool Camera::close()
 {
 	// Close the stream
 	m_cap.release();
-	
+
 	// Close all the windows
 	destroyAllWindows();
 	usleep(100000);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
